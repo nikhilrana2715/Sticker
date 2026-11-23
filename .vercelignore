@@ -1,0 +1,7 @@
+samples/
+legacy/
+node_modules/
+dist/
+.claude/
+*.log
+.env*

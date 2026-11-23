@@ -28,3 +28,6 @@ legacy/
 samples/*.xlsx
 samples/*.xls
 samples/*.pdf
+
+.vercel
+.env*
