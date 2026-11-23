@@ -1,5 +1,7 @@
 # MRS Sticker Print Studio
 
+**Live:** https://mrs-sticker.vercel.app
+
 A browser app for printing stickers on a TSC thermal roll printer (TE310, 4-inch head).
 
 - **PDF mode:** upload a packing-slip PDF that has several stickers on each A4 page. The app finds each sticker, makes the text bold, scales it to the label size (default 100 × 150 mm) and outputs one sticker per page.
