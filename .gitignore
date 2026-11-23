@@ -1,0 +1,30 @@
+# Dependencies & build output
+node_modules/
+dist/
+.vercel/
+
+# Logs & OS files
+npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Local env
+.env
+.env.*
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Old single-file version (local reference only)
+legacy/
+
+# Company data: keep real Excel/PDF files out of the public repo
+samples/*.xlsx
+samples/*.xls
+samples/*.pdf

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="MRS Sticker Print Studio: split packing-slip PDFs into one sticker per label, or build custom stickers from Excel and print them on a TSC roll printer.">
+<title>MRS Sticker Print Studio</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script>
+/* Set theme before paint to avoid a flash. */
+(function(){try{var t=localStorage.getItem('mrsps:theme');t=t?JSON.parse(t):(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=t;}catch(e){}})();
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><div class="logo">MRS</div><div style="min-width:0"><b>Sticker Print Studio</b><small>Label printing · v4.1</small></div></div>
+    <div class="top-actions">
+      <span class="pill" id="sizePill">100 × 150 mm</span>
+      <button class="icon-btn" id="themeBtn" type="button" title="Toggle light / dark mode" aria-label="Toggle light or dark mode">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="layout">
+    <!-- LEFT: settings -->
+    <aside class="panel side">
+      <div class="scroll">
+        <div class="sec">
+          <div class="sec-h"><h3><span class="n">1</span>Upload PDF or Excel</h3></div>
+          <div class="drop" id="dropzone" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="uploadMenu">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/></svg></div>
+            <div><strong>Upload file</strong><small>PDF or Excel · click or drop</small></div>
+          </div>
+          <div class="up-menu hidden" id="uploadMenu">
+            <button type="button" class="up-opt" id="pickPdf">
+              <span class="up-ic pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+              <span><strong>Upload PDF</strong><small>Packing slip</small></span>
+            </button>
+            <button type="button" class="up-opt" id="pickExcel">
+              <span class="up-ic xls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 8l8 8M16 8l-8 8"/></svg></span>
+              <span><strong>Upload Excel</strong><small>Custom sticker</small></span>
+            </button>
+          </div>
+          <input id="pdfFile" class="hidden" type="file" accept="application/pdf,.pdf">
+          <input id="excelFile" class="hidden" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+          <div class="file" id="fileBox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span id="fileName"></span><button type="button" id="clearFile" title="Remove file" aria-label="Remove file">×</button></div>        </div>
+
+        <!-- ===== Excel builder (visible only in Excel mode) ===== -->
+        <div class="sec xl-only">
+          <div class="sec-h"><h3><span class="n">2</span>Sticker format</h3><small id="xlInfo"></small></div>
+          <div class="field"><label for="xlSheet">Excel sheet</label><select id="xlSheet"></select></div>
+          <div class="grid2">
+            <div class="field"><label for="xlW">Sticker width (mm)</label><input id="xlW" type="number" min="10" max="300" step="0.5"></div>
+            <div class="field"><label for="xlH">Sticker height (mm)</label><input id="xlH" type="number" min="10" max="300" step="0.5"></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="xlAcross">Stickers across roll</label><select id="xlAcross"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+            <div class="field"><label for="xlGap">Gap between (mm)</label><select id="xlGap"><option value="0">0 mm</option><option value="1">1 mm</option><option value="2">2 mm</option><option value="3">3 mm</option><option value="4">4 mm</option><option value="5">5 mm</option></select></div>
+          </div>
+          <div class="inline-warn" id="xlWarn"></div>
+        </div>
+
+        <div class="sec xl-only">
+          <div class="sec-h"><h3><span class="n">3</span>Edit sticker</h3><small id="xlCountInfo"></small></div>
+          <div class="field">
+            <label for="xlPick">Sticker</label>
+            <div class="xl-pickrow"><select id="xlPick"></select><button type="button" class="mini" id="xlDup" title="Duplicate this sticker">+ Copy</button><button type="button" class="mini" id="xlDel" title="Delete this sticker">Delete</button></div>
+          </div>
+          <div class="field"><label for="xlTitle">Title (top line)</label><input id="xlTitle" type="text" placeholder="e.g. 6303 C3"></div>
+          <div class="xl-head"><span title="Show on sticker">✓</span><span>Label</span><span>Value</span><span></span></div>
+          <div id="xlRows"></div>
+          <button type="button" class="mini" id="xlAddRow">+ Add row</button>
+          <div class="grid2" style="margin-top:10px">
+            <div class="field"><label for="xlCopies">Copies of this sticker</label><input id="xlCopies" type="number" min="1" max="999" step="1" value="1"></div>
+            <div class="field"><label for="xlAllCopies">Set copies for all</label><input id="xlAllCopies" type="number" min="1" max="999" step="1" placeholder="—"></div>
+          </div>        </div>
+
+        <div class="sec xl-only">
+          <div class="sec-h"><h3><span class="n">4</span>Design</h3></div>
+          <div class="field"><label for="xdLayout">Layout</label><select id="xdLayout"><option value="roll">Roll sticker (MRS kit style)</option><option value="fill">Fill whole sticker</option></select></div>
+          <div class="grid2">
+            <div class="field"><label for="xdBorder">Border</label><select id="xdBorder"><option value="round">Rounded</option><option value="square">Square</option><option value="none">None</option></select></div>
+            <div class="field"><label for="xdAlign">Title align</label><select id="xdAlign"><option value="center">Center</option><option value="left">Left</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="xdWeight">Text weight</label><select id="xdWeight"><option value="400">Normal</option><option value="700">Bold</option><option value="900">Heavy</option></select></div>
+            <div class="field"><label for="xdSep">After label</label><select id="xdSep"><option value=" :">Label :</option><option value=" :-">Label :-</option><option value="">Nothing</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="xdSplit">Label column width</label><select id="xdSplit"><option value="auto">Auto (best fit)</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option><option value="55">55%</option><option value="60">60%</option></select></div>
+            <div class="field"><label for="xdScale">Text size</label><select id="xdScale"><option value="0.85">Small</option><option value="1">Normal</option><option value="1.12">Large</option><option value="1.25">Extra large</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="xdPad">Inner margin</label><select id="xdPad"><option value="0.8">0.8 mm</option><option value="1.2">1.2 mm</option><option value="1.6">1.6 mm</option><option value="2.2">2.2 mm</option><option value="3">3 mm</option></select></div>
+            <div class="field"><label for="xdTitleScale">Title size</label><select id="xdTitleScale"><option value="1">Same as text</option><option value="1.2">Bigger</option><option value="1.45">Biggest</option></select></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="xdLine"><span class="sw"></span><span><b>Line under title</b></span></label>
+          <div class="xl-live"><div class="xl-live-h">Live preview <small id="xlLiveSize"></small></div><canvas id="xlCanvas"></canvas></div>
+        </div>
+
+        <div class="sec pdf-only">
+          <div class="sec-h"><h3><span class="n">2</span>Original PDF layout</h3><small>stickers per A4 page</small></div>
+          <div class="grid2">
+            <div class="field"><label for="columns">Columns</label><select id="columns"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+            <div class="field"><label for="rows">Rows</label><select id="rows"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="cropMode">Crop mode</label><select id="cropMode"><option value="smart" selected>Smart</option><option value="cell">Grid cell</option></select></div>
+            <div class="field"><label for="threshold">Detection</label><select id="threshold"><option value="235">Strict</option><option value="245" selected>Normal</option><option value="250">Sensitive</option></select></div>
+          </div>        </div>
+
+        <div class="sec pdf-only">
+          <div class="sec-h"><h3><span class="n">3</span>Output label size</h3><small id="sizeCount"></small></div>
+          <div class="size-tabs" id="sizeTabs"></div>
+          <div class="size-grid" id="sizeGrid"></div>
+          <div class="custom">
+            <div class="field"><label for="labelWidth">Width (mm)</label><input id="labelWidth" type="number" min="15" max="300" step="0.5" value="100"></div>
+            <button class="swap" id="swapBtn" type="button" title="Swap width and height" aria-label="Swap width and height"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4 3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></svg></button>
+            <div class="field"><label for="labelHeight">Height / feed (mm)</label><input id="labelHeight" type="number" min="15" max="500" step="0.5" value="150"></div>
+          </div>
+          <div class="inline-warn" id="widthWarn">Wider than TSC TE310 max (105.7 mm): edges may get cut.</div>
+        </div>
+
+        <div class="sec pdf-only">
+          <div class="sec-h"><h3><span class="n">4</span>Print quality</h3></div>
+          <div class="field">
+            <label>Text weight</label>
+            <div class="seg" id="weightSeg">
+              <button type="button" data-v="0">Normal</button>
+              <button type="button" data-v="2" class="on">Bold</button>
+              <button type="button" data-v="3.4">Extra bold</button>
+              <button type="button" data-v="5">Heavy</button>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="orient">Rotation</label><select id="orient"><option value="auto" selected>Auto (best fit)</option><option value="on">Rotate 90°</option><option value="off">No rotation</option></select></div>
+            <div class="field"><label for="dpi">Resolution</label><select id="dpi"><option value="203">203 dpi</option><option value="300" selected>300 dpi (TE310)</option><option value="400">400 dpi (sharp)</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="padding">Crop padding</label><select id="padding"><option value="0">0 mm</option><option value="0.5">0.5 mm</option><option value="1" selected>1 mm</option><option value="2">2 mm</option><option value="3">3 mm</option></select></div>
+            <div class="field"><label for="margin">Label margin</label><select id="margin"><option value="0">0 mm</option><option value="1" selected>1 mm</option><option value="2">2 mm</option><option value="3">3 mm</option><option value="5">5 mm</option></select></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="deepBlack" checked><span class="sw"></span><span><b>Deep black ink</b></span></label>
+          <label class="toggle"><input type="checkbox" id="thicken"><span class="sw"></span><span><b>Thicken ink</b><small>Only for scanned PDFs</small></span></label>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="processBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12M18 9v12M6 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM18 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM9 18h6M15 6H9"/></svg><span id="processTxt">Separate stickers</span></button>
+        <div class="btn-row">
+          <button class="btn primary" id="printBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>Print <span class="kbd">Ctrl P</span></button>
+          <button class="btn ghost" id="downloadBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>PDF</button>
+        </div>
+        <div class="progress" id="progress"><div id="progressBar"></div></div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </div>
+    </aside>
+
+    <!-- RIGHT: preview -->
+    <section>
+      <div class="stats">
+        <div class="stat"><small>Pages</small><b id="pageCount">—</b></div>
+        <div class="stat"><small>Stickers</small><b id="stickerCount">—</b></div>
+        <div class="stat"><small>Selected</small><b id="selCount">—</b></div>
+        <div class="stat"><small>Size</small><b id="outputSize">100 × 150 <em>mm</em></b></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph">
+          <div><h2>Sticker preview</h2><p id="previewSubtitle">Click a card to include or exclude it.</p></div>
+          <div class="ph-actions"><button class="mini" id="selAll" disabled>Select all</button><button class="mini" id="selNone" disabled>Select none</button></div>
+        </div>
+        <div class="empty" id="emptyState"><div>
+          <div class="big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/></svg></div>
+          <b>No stickers yet</b><span>Upload a file to start.</span>
+        </div></div>
+        <div class="pgrid" id="previewGrid"></div>
+      </div>
+
+      <div class="panel help">
+        <details class="acc">
+          <summary><span class="dot" style="background:var(--good)"></span>Printer settings (TSC TE310)</summary>
+          <div class="in"><ol>
+            <li class="xl-only-inline">Printer: <b>TSC TE310 - 45x32</b> (separate printer, not the 100 × 150 one).</li>
+            <li>Paper size: <b class="szW">100</b> × <b class="szH">150</b> mm, media <b>Gap / Die-cut</b>.</li>
+            <li>Print dialog: Margins <b>None</b>, Scale <b>100</b>, “Fit to page” OFF.</li>
+            <li>Print dialog should show <b id="expectPages">one page per sticker</b>.</li>
+            <li>Darker text: <b>Darkness</b> 10–12.</li>
+          </ol></div>
+        </details>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="dev">Developed by <span>Nikhil</span></div>
+  <div class="lock">MRS Bearings Pvt. Ltd.</div>
+</footer>
+
+<dialog class="dlg" id="piecesDlg" aria-labelledby="piecesTitle">
+  <form method="dialog" id="piecesForm">
+    <h3 id="piecesTitle">How many pieces?</h3>
+    <p class="dlg-sub" id="piecesSub"></p>
+    <input id="piecesInput" type="number" min="1" max="999" step="1" value="1" inputmode="numeric" aria-label="Pieces per sticker">
+    <p class="dlg-calc" id="piecesCalc"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" id="piecesCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="piecesOk" value="ok">Create</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="lb" id="lightbox" aria-hidden="true">
+  <div class="lb-in">
+    <div class="lb-bar"><b id="lbTitle">Sticker</b><div class="nav"><button class="mini" id="lbPrev">← Prev</button><button class="mini" id="lbNext">Next →</button><button class="mini" id="lbClose">Close</button></div></div>
+    <img id="lbImg" alt="Sticker preview">
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

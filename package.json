@@ -1,0 +1,27 @@
+{
+  "name": "sticker",
+  "version": "4.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "repository": "github:nikhilrana2715/Sticker",
+  "description": "Split packing-slip PDFs into one sticker per label, or build custom stickers from Excel, for TSC thermal roll printers.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "jspdf": "2.5.1",
+    "pdfjs-dist": "3.11.174",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
+  }
+}
