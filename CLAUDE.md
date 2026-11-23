@@ -91,4 +91,5 @@ Read this first every session. Keep it updated when project changes.
 
 ## 10. Open Notes / TODO
 - Upgrade jspdf 2.5.1 → 4.x (major) and pdfjs-dist 3 → current (major); retest PDF output after.
-- `git init` + first commit + GitHub repo + Vercel project when user asks.
+- GitHub: https://github.com/nikhilrana2715/Sticker (branch `main`, pushed 2026-11-23, commit a7b754d). Git identity set locally: nikhilrana2715. `legacy/` and `samples/` git-ignored.
+- Vercel: team `nikhilrana2715s-projects` (team_HS7Tu5GBdPAdH5Kt0zqt0hZi). Project name must be lowercase → `sticker`. Vercel MCP create_git_project returned 403; CLI not logged in. User to import via vercel.com/new (or `npx vercel login` then deploy).
